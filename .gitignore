@@ -1,0 +1,20 @@
+# Logs y archivos temporales
+*.log
+__pycache__/
+*.pyc
+*.pyo
+.env
+
+# Credenciales sensibles
+*.key
+*.pem
+credentials.json
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
+
+# Backups
+*.tar.gz
+*.sha256
+*-BACKUP*/

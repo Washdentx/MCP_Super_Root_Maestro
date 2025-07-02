@@ -1,10 +1,11 @@
-# 🔥 MCP Super Root Maestro v2.1.0
+# 🔥 MCP Super Root Maestro v2.2.0
 
 ## El Ecosistema de Ciberseguridad Más Avanzado del Mundo
 
-### ✅ 308 Endpoints Especializados
+### ✅ 328+ Endpoints Especializados
 - **Reconnaissance & OSINT**: 61 endpoints
 - **System Administration**: 87 endpoints  
+- **Process Management**: 20+ endpoints ⭐ **NEW**
 - **Web Security Testing**: 28 endpoints
 - **Wireless & Crypto**: 16 endpoints
 - **MCP Integration**: 14 endpoints
@@ -59,6 +60,19 @@ docker run -p 8001:8001 mcp-super-root-maestro:latest
 |----------|-----------|-------------|-----|
 | `/ws` | WebSocket | Conexiones tiempo real | `ws://localhost:8090/ws` |
 | `/broadcast` | POST | Broadcast a WebSocket clientes | JSON message |
+
+#### ⚡ Process Management Endpoints ⭐ **NEW v2.2.0**
+| Endpoint | Método | Descripción | Ejemplo |
+|----------|--------|-------------|---------|
+| `/system/pkill/{process_name}` | POST | Mata procesos por nombre | `curl -X POST http://localhost:8001/system/pkill/nginx` |
+| `/system/killall/{process_name}` | POST | Mata todos los procesos exactos | `curl -X POST http://localhost:8001/system/killall/python` |
+| `/system/kill/{pid}` | POST | Mata proceso por PID | `curl -X POST http://localhost:8001/system/kill/1234` |
+| `/system/processes` | GET | Lista procesos activos | `curl http://localhost:8001/system/processes` |
+| `/system/processes/search/{pattern}` | GET | Busca procesos por patrón | `curl http://localhost:8001/system/processes/search/node` |
+| `/system/stats` | GET | Estadísticas del sistema | `curl http://localhost:8001/system/stats` |
+| `/system/service/{action}/{service}` | POST | Gestiona servicios systemd | `curl -X POST http://localhost:8001/system/service/restart/nginx` |
+| `/system/command/safe` | POST | Ejecuta comandos seguros | `curl -X POST -d '{"cmd":"ps aux"}' http://localhost:8001/system/command/safe` |
+| `/system/network/ports/{port}` | GET | Verifica puerto específico | `curl http://localhost:8001/system/network/ports/8080` |
 
 #### 📚 Documentation Endpoints
 | Endpoint | Método | Descripción | URL |

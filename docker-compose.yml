@@ -1,0 +1,140 @@
+version: '3.8'
+
+services:
+  # MCP Super Root Maestro - Servidor Principal
+  mcp-server:
+    build: .
+    container_name: mcp-super-root-maestro
+    ports:
+      - "8001:8001"
+    environment:
+      - MCP_VERSION=2.1.0
+      - MCP_ENVIRONMENT=production
+      - REDIS_URL=redis://redis:6379
+      - POSTGRES_URL=postgresql://mcpuser:mcppass@postgres:5432/mcpdb
+    depends_on:
+      - redis
+      - postgres
+    restart: unless-stopped
+    networks:
+      - mcp-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Load Balancer con WebSocket Support
+  nginx-lb:
+    image: nginx:alpine
+    container_name: mcp-load-balancer
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - mcp-server
+    restart: unless-stopped
+    networks:
+      - mcp-network
+
+  # Redis para cache y WebSocket sessions
+  redis:
+    image: redis:7-alpine
+    container_name: mcp-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    networks:
+      - mcp-network
+    command: redis-server --appendonly yes
+
+  # PostgreSQL para persistencia
+  postgres:
+    image: postgres:15-alpine
+    container_name: mcp-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: mcpdb
+      POSTGRES_USER: mcpuser
+      POSTGRES_PASSWORD: mcppass
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - mcp-network
+
+  # Swagger UI para documentación
+  swagger-ui:
+    image: swaggerapi/swagger-ui
+    container_name: mcp-swagger
+    ports:
+      - "8080:8080"
+    environment:
+      SWAGGER_JSON: /app/openapi.json
+      BASE_URL: /docs
+    volumes:
+      - ./openapi.json:/app/openapi.json:ro
+    restart: unless-stopped
+    networks:
+      - mcp-network
+
+  # Prometheus para métricas
+  prometheus:
+    image: prom/prometheus
+    container_name: mcp-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+    restart: unless-stopped
+    networks:
+      - mcp-network
+
+  # Grafana para dashboards
+  grafana:
+    image: grafana/grafana
+    container_name: mcp-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: mcpadmin
+    volumes:
+      - grafana-data:/var/lib/grafana
+    restart: unless-stopped
+    networks:
+      - mcp-network
+
+  # Portainer para gestión Docker
+  portainer:
+    image: portainer/portainer-ce
+    container_name: mcp-portainer
+    ports:
+      - "9000:9000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer-data:/data
+    restart: unless-stopped
+    networks:
+      - mcp-network
+
+volumes:
+  redis-data:
+  postgres-data:
+  prometheus-data:
+  grafana-data:
+  portainer-data:
+
+networks:
+  mcp-network:
+    driver: bridge

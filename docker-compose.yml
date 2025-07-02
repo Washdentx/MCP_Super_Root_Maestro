@@ -1,4 +1,4 @@
-version: '3.8'
+# Docker Compose for MCP Super Root Maestro v2.1.0
 
 services:
   # MCP Super Root Maestro - Servidor Principal
@@ -6,7 +6,7 @@ services:
     build: .
     container_name: mcp-super-root-maestro
     ports:
-      - "8001:8001"
+      - "8003:8001"
     environment:
       - MCP_VERSION=2.1.0
       - MCP_ENVIRONMENT=production
@@ -29,8 +29,8 @@ services:
     image: nginx:alpine
     container_name: mcp-load-balancer
     ports:
-      - "80:80"
-      - "443:443"
+      - "8090:80"
+      - "8443:443"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
@@ -44,7 +44,7 @@ services:
     image: redis:7-alpine
     container_name: mcp-redis
     ports:
-      - "6379:6379"
+      - "6380:6379"
     volumes:
       - redis-data:/data
     restart: unless-stopped
@@ -73,7 +73,7 @@ services:
     image: swaggerapi/swagger-ui
     container_name: mcp-swagger
     ports:
-      - "8080:8080"
+      - "8081:8080"
     environment:
       SWAGGER_JSON: /app/openapi.json
       BASE_URL: /docs
@@ -88,7 +88,7 @@ services:
     image: prom/prometheus
     container_name: mcp-prometheus
     ports:
-      - "9090:9090"
+      - "9091:9090"
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus-data:/prometheus
@@ -106,7 +106,7 @@ services:
     image: grafana/grafana
     container_name: mcp-grafana
     ports:
-      - "3000:3000"
+      - "3002:3000"
     environment:
       GF_SECURITY_ADMIN_PASSWORD: mcpadmin
     volumes:
@@ -118,9 +118,9 @@ services:
   # Portainer para gestión Docker
   portainer:
     image: portainer/portainer-ce
-    container_name: mcp-portainer
+    container_name: mcp-portainer-new
     ports:
-      - "9000:9000"
+      - "9001:9000"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - portainer-data:/data
